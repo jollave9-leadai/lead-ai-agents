@@ -4,11 +4,11 @@ export interface MCPTool {
   description?: string;
   inputSchema?: {
     type: string;
-    properties?: Record<string, any>;
+    properties?: Record<string, unknown>;
     required?: string[];
-    [key: string]: any;
+    [key: string]: unknown;
   };
-  outputSchema?: any;
+  outputSchema?: unknown;
   title?: string;
 }
 

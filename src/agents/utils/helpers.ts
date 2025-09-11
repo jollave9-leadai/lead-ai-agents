@@ -49,7 +49,7 @@ async function callLLM(
   options: LLMCallOptions = {}
 ): Promise<LLMResponse> {
   try {
-    let supportsToolCalling = [
+    const supportsToolCalling = [
       "openai/gpt-4o",
       "openai/gpt-4.1",
       "openai/gpt-oss-20b",
