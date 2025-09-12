@@ -31,22 +31,24 @@ export async function crmAgent(message: string) {
     { tools }
   );
 
+  const tool_calls_result = [];
   if (tool_calls) {
     for (const tool_call of tool_calls) {
       if (tool_call.type === "function") {
         const { name, arguments: toolArgs } = tool_call.function;
         if (name) {
           const parsedArgs = JSON.parse(toolArgs);
-          const { result } = await client.callTool({
+          const result = await client.callTool({
             name,
             arguments: parsedArgs,
           });
           console.log("Tool result:", result);
+          tool_calls_result.push(result);
         }
       }
     }
   }
 
   console.log({ tool_calls, content, usage });
-  return { tool_calls, content, usage };
+  return { tool_calls, content, usage, tool_calls_result };
 }
