@@ -54,6 +54,7 @@ async function callLLM(
       "openai/gpt-4.1",
       "openai/gpt-oss-20b",
       "openai/gpt-oss-120b", // add more as needed
+      "x-ai/grok-4-fast:free", // add more as needed
     ].includes(options.model || LLM_CONFIG.model);
     console.log(`Calling LLM with model: ${options.model || LLM_CONFIG.model}`);
 
@@ -80,6 +81,7 @@ async function callLLM(
     });
 
     console.log("response message:", response.choices[0].message);
+    console.log("response tool calls:", response.choices[0].message.tool_calls);
     if (
       !response.choices[0].message.tool_calls &&
       !response.choices?.[0]?.message?.content
