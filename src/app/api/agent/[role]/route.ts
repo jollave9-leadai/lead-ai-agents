@@ -8,6 +8,12 @@ export async function POST(
   req: Request,
   { params }: { params: Promise<{ role: string }> }
 ) {
+  const { searchParams } = new URL(req.url);
+  const validationToken = searchParams.get("validationToken");
+  // if (validationToken !== process.env.VALIDATION_TOKEN) {
+  if (validationToken) {
+    return new NextResponse(validationToken, { status: 200 });
+  }
   const body = await req.json();
   const { role } = await params;
   console.log("body", body);
