@@ -31,7 +31,7 @@ export async function crmAgent(
     // This handler is invoked when server does sampling/createMessage
     CreateMessageRequestSchema,
     async (req) => {
-      const { messages} = req.params;
+      const { messages } = req.params;
       console.log("messages", messages);
       // Here, call your LLM (e.g. OpenAI, local model, etc.)
       const { content } = await callLLM([
