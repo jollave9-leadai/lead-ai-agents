@@ -5,9 +5,11 @@ import type { ChatCompletionSystemMessageParam } from "openai/resources/chat/com
 
 // ✅ Secure API key handling
 const openai = new OpenAI({
-  apiKey: process.env.OPENROUTER_API_KEY,
+  // apiKey: process.env.OPENROUTER_API_KEY,
+  apiKey: process.env.LEADAI_GROQ_API_KEY,
   timeout: LLM_CONFIG.timeout,
-  baseURL: process.env.OPENAI_BASE_URL || "https://api.openai.com/v1",
+  // baseURL: process.env.OPENAI_BASE_URL || "https://api.openai.com/v1",
+  baseURL: process.env.GROQ_BASE_URL || "https://openrouter.ai/api/v1",
 });
 
 const convertMCPToolsToOpenAITools = (mcpTools: MCPTool[]) => {
