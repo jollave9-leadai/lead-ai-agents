@@ -17,6 +17,13 @@ export async function POST(
   const body = await req.json();
   const { role } = await params;
   console.log("body", body);
+
+  // Outlook webhook will be handled here
+  if (body.value) {
+    // Just return the value for now to skip the agent logic
+    return NextResponse.json({ value: body.value });
+  }
+
   if (role === AGENT_ROLE.CRM) {
     const {
       message,
