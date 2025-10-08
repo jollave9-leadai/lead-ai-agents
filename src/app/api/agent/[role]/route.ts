@@ -88,7 +88,8 @@ export async function POST(
                   const inbox = await sendToInbox(
                     client_id,
                     task.id,
-                    messageBody
+                    messageBody,
+                    customer?.id
                   );
                   return NextResponse.json(inbox);
                 }
