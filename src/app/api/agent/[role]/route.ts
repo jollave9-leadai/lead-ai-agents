@@ -3,6 +3,7 @@ import { crmAgent } from "@/agents/";
 import { AGENT_ROLE } from "@/agents/enums";
 import axios from "axios";
 import { callLLM } from "@/agents/utils/helpers";
+import { sendToInbox } from "@/agents/crm-agent/utils";
 
 export async function POST(
   req: Request,
@@ -50,39 +51,54 @@ export async function POST(
       // Promise.allSettled to make the requests in parallel
       const taskMessages = recordTasks
         ? await Promise.allSettled(
-            recordTasks?.map(async (task: { type: string; script: string }) => {
-              console.log("agentInstructions", agentInstructions);
-              console.log("task.script", task.script);
+            recordTasks?.map(
+              async (task: {
+                id: string;
+                type: string;
+                script: string;
+                for_approval: boolean;
+              }) => {
+                console.log("agentInstructions", agentInstructions);
+                console.log("task.script", task.script);
 
-              let messageBody = "";
-              if (task.type === "SMS" || task.type === "Email") {
-                // TODO: Implement mcp sampling for generating the script
-                const { content } = await callLLM([
-                  {
-                    role: "system",
-                    content: agentInstructions,
-                  },
-                  {
-                    role: "assistant",
-                    content: `You are an agent that is communicating in a ${task.type} communication.`,
-                  },
-                  {
-                    role: "user",
-                    content: `Generate a message for the customer in ${task.type} format.`,
-                  },
-                ]);
-                // If the task type is a SMS, then the message will based on the conversation context.
-                messageBody = content || "";
-              } else {
-                // If the task type is a call, then pass directly the script to the outbound agent
-                messageBody = task.script;
-              }
-              const toolCallMessage = `${task.type}-customer,
+                let messageBody = "";
+                if (task.type === "SMS" || task.type === "Email") {
+                  // TODO: Implement mcp sampling for generating the script
+                  const { content } = await callLLM([
+                    {
+                      role: "system",
+                      content: agentInstructions,
+                    },
+                    {
+                      role: "assistant",
+                      content: `You are an agent that is communicating in a ${task.type} communication.`,
+                    },
+                    {
+                      role: "user",
+                      content: `Generate a message for the customer in ${task.type} format.`,
+                    },
+                  ]);
+                  // If the task type is a SMS, then the message will based on the conversation context.
+                  messageBody = content || "";
+                } else {
+                  // If the task type is a call, then pass directly the script to the outbound agent
+                  messageBody = task.script;
+                }
+                if (task.for_approval) {
+                  const inbox = await sendToInbox(
+                    client_id,
+                    task.id,
+                    messageBody
+                  );
+                  return NextResponse.json(inbox);
+                }
+                const toolCallMessage = `${task.type}-customer,
                 {name: ${customer?.full_name}, client_id: ${client_id}, ${
-                task.type === "Call" ? "script:" : "message:"
-              } ${messageBody}}\n\n`;
-              await crmAgent(toolCallMessage);
-            })
+                  task.type === "Call" ? "script:" : "message:"
+                } ${messageBody}}\n\n`;
+                await crmAgent(toolCallMessage);
+              }
+            )
           )
         : [];
       return NextResponse.json(taskMessages);
