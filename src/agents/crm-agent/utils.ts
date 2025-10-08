@@ -40,14 +40,14 @@ export const getPipelineStage = async (pipelineStageId: string) => {
   return data;
 };
 
-export const sendToInbox = async (client_id: string, task_id: string, message: string) => {
+export const sendToInbox = async (client_id: string, task_id: string, script: string) => {
   const supabasePersonal = createClient(
     process.env.PERSONAL_SUPABASE_URL!,
     process.env.PERSONAL_SUPABASE_ANON_KEY!
   );
   const { data, error } = await supabasePersonal
     .from("inbox")
-    .insert({ client_id, task_id, message });
+    .insert({ client_id, task_id, script });
   if (error) {
     console.error("Error sending to inbox:", error);
   }
