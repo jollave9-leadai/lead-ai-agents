@@ -89,7 +89,7 @@ export async function POST(
                     client_id,
                     task.id,
                     messageBody,
-                    customer?.id
+                    customer?.customer_id
                   );
                   return NextResponse.json(inbox);
                 }
