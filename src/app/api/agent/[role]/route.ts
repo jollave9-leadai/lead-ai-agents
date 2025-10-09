@@ -95,6 +95,7 @@ export async function POST(
                           description: messageBody,
                           communicationType: task.type.toLowerCase(),
                           customer,
+                          stage_agent_settings: stage?.data?.agent_settings,
                         },
                         category: "approval",
                         relatedEntityId: task.id,
