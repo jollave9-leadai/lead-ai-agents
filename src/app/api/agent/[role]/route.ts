@@ -79,33 +79,29 @@ export async function POST(
                   // If the task type is a call, then pass directly the script to the outbound agent
                   messageBody = task.script;
                 }
-                console.log("task.for_approval", task.for_approval);
+                // Send the message to the inbox if it's for approval
                 if (task.for_approval) {
-                  console.log(
-                    "Sending the message to the inbox if it's for approval"
-                  );
-                  console.log(
-                    "process.env.NESTJS_API_URL",
-                    process.env.NESTJS_API_URL
-                  );
-                  // Send the message to the inbox if it's for approval
-                  const inbox = await axios.post(
-                    `${process.env.NESTJS_API_URL}/api/v1/inbox`,
-                    {
-                      client_id: client_id,
-                      title: `${task.type} for ${customer?.full_name}`,
-                      content: {
-                        description: messageBody,
-                        communicationType: task.type.toLowerCase(),
-                        customer,
-                      },
-                      category: "approval",
-                      relatedEntityId: task.id,
-                      relatedEntityType: "task",
-                    }
-                  );
-                  console.log("inbox", inbox);
-                  return NextResponse.json(inbox);
+                  try {
+                    const inbox = await axios.post(
+                      `${process.env.NESTJS_API_URL}/api/v1/inbox`,
+                      {
+                        clientId: client_id,
+                        title: `${task.type} for ${customer?.full_name}`,
+                        content: {
+                          description: messageBody,
+                          communicationType: task.type.toLowerCase(),
+                          customer,
+                        },
+                        category: "approval",
+                        relatedEntityId: task.id,
+                        relatedEntityType: "task",
+                      }
+                    );
+                    console.log("inbox", inbox.data);
+                    return NextResponse.json(inbox.data);
+                  } catch (error) {
+                    console.error("Error sending to inbox:", error);
+                  }
                 }
                 const toolCallMessage = `${task.type}-customer,
                 {name: ${customer?.full_name}, client_id: ${client_id}, ${
