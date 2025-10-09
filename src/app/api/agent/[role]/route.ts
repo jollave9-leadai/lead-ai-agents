@@ -84,6 +84,10 @@ export async function POST(
                   console.log(
                     "Sending the message to the inbox if it's for approval"
                   );
+                  console.log(
+                    "process.env.NESTJS_API_URL",
+                    process.env.NESTJS_API_URL
+                  );
                   // Send the message to the inbox if it's for approval
                   const inbox = await axios.post(
                     `${process.env.NESTJS_API_URL}/api/v1/inbox`,
