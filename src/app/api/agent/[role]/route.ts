@@ -56,6 +56,9 @@ export async function POST(
                 type: string;
                 script: string;
                 for_approval: boolean;
+                agent_settings: {
+                  script: string;
+                };
               }) => {
                 console.log("agentInstructions", agentInstructions);
                 console.log("task.script", task.script);
@@ -77,11 +80,12 @@ export async function POST(
                   messageBody = content || "";
                 } else {
                   // If the task type is a call, then pass directly the script to the outbound agent
-                  messageBody = task.script;
+                  messageBody = task?.agent_settings?.script;
                 }
                 // Send the message to the inbox if it's for approval
                 if (task.for_approval) {
                   try {
+                    console.log("messageBody", messageBody);
                     const inbox = await axios.post(
                       `${process.env.NESTJS_API_URL}/api/v1/inbox`,
                       {
