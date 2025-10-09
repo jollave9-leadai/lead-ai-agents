@@ -65,10 +65,6 @@ export async function POST(
                   // TODO: Implement mcp sampling for generating the script
                   const { content } = await callLLM([
                     {
-                      role: "system",
-                      content: agentInstructions,
-                    },
-                    {
                       role: "assistant",
                       content: `You are an agent that is communicating in a ${task.type} communication.`,
                     },
