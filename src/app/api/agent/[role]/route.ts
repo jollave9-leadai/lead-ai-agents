@@ -96,6 +96,7 @@ export async function POST(
                       relatedEntityType: "task",
                     }
                   );
+                  console.log("inbox", inbox);
                   return NextResponse.json(inbox);
                 }
                 const toolCallMessage = `${task.type}-customer,
