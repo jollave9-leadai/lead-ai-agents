@@ -3,7 +3,6 @@ import { crmAgent } from "@/agents/";
 import { AGENT_ROLE } from "@/agents/enums";
 import axios from "axios";
 import { callLLM } from "@/agents/utils/helpers";
-import { sendToInbox } from "@/agents/crm-agent/utils";
 
 export async function POST(
   req: Request,
@@ -85,11 +84,21 @@ export async function POST(
                   messageBody = task.script;
                 }
                 if (task.for_approval) {
-                  const inbox = await sendToInbox(
-                    client_id,
-                    task.id,
-                    messageBody,
-                    customer?.customer_id
+                  // Send the message to the inbox if it's for approval
+                  const inbox = await axios.post(
+                    `${process.env.NESTJS_API_URL}/api/v1/inbox`,
+                    {
+                      client_id: client_id,
+                      title: `${task.type} for ${customer?.full_name}`,
+                      content: {
+                        description: messageBody,
+                        communicationType: task.type.toLowerCase(),
+                        customer,
+                      },
+                      category: "approval",
+                      relatedEntityId: task.id,
+                      relatedEntityType: "task",
+                    }
                   );
                   return NextResponse.json(inbox);
                 }
