@@ -100,6 +100,7 @@ export async function POST(
                         category: "approval",
                         relatedEntityId: task.id,
                         relatedEntityType: "task",
+                        approvalStatus: "pending",
                       }
                     );
                     console.log("inbox", inbox.data);
