@@ -96,7 +96,7 @@ export async function POST(
                           communicationType: task.type.toLowerCase(),
                           customer,
                           stage_agent_settings: stage?.data?.agent_settings,
-                          approvalStatus: "pending",
+                          status: "pending",
                         },
                         category: "approval",
                         relatedEntityId: task.id,
