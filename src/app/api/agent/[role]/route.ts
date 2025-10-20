@@ -68,12 +68,16 @@ export async function POST(
                   // TODO: Implement mcp sampling for generating the script
                   const { content } = await callLLM([
                     {
+                      role: "system",
+                      content: `You are a CRM agent that is communicating in a ${task.type} communication.`,
+                    },
+                    {
                       role: "assistant",
-                      content: `You are an agent that is communicating in a ${task.type} communication.`,
+                      content: `Generate a message in ${task.type} format.`,
                     },
                     {
                       role: "user",
-                      content: `Generate a message for the customer in ${task.type} format.`,
+                      content: task.script,
                     },
                   ]);
                   // If the task type is a SMS, then the message will based on the conversation context.
