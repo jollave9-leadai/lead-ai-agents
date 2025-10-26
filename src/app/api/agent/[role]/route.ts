@@ -73,7 +73,7 @@ export async function POST(
                     },
                     {
                       role: "assistant",
-                      content: `Generate a message in ${task.type} format.`,
+                      content: `Generate a message in ${task.type} format. ${task.type === "Email" ? "Respond with a JSON object with the following properties: subject, body, and attachments.":""}`,
                     },
                     {
                       role: "user",
