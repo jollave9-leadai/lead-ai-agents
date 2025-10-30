@@ -3,6 +3,11 @@ import { crmAgent } from "@/agents/";
 import { AGENT_ROLE } from "@/agents/enums";
 import axios from "axios";
 import { callLLM } from "@/agents/utils/helpers";
+import {
+  handleImmediateTaskExecution,
+  sendTaskToInbox,
+} from "@/lib/utils/helpers";
+import { AgentTask } from "@/types/crm";
 
 export async function POST(
   req: Request,
@@ -58,13 +63,14 @@ export async function POST(
                 for_approval: boolean;
                 agent_settings: {
                   script: string;
+                  from: string;
                 };
               }) => {
                 console.log("agentInstructions", agentInstructions);
                 console.log("task.script", task.script);
 
                 let messageBody = "";
-                if (task.type === "SMS" || task.type === "Email") {
+                if (task.type === "sms" || task.type === "email") {
                   // TODO: Implement mcp sampling for generating the script
                   const { content } = await callLLM([
                     {
@@ -73,7 +79,11 @@ export async function POST(
                     },
                     {
                       role: "assistant",
-                      content: `Generate a message in ${task.type} format. ${task.type === "Email" ? "Respond with a JSON object with the following properties: subject, body, and attachments.":""}`,
+                      content: `Generate a message in ${task.type} format. ${
+                        task.type === "email"
+                          ? "Respond with a JSON object with the following properties: subject, body, and attachments."
+                          : ""
+                      }`,
                     },
                     {
                       role: "user",
@@ -90,22 +100,12 @@ export async function POST(
                 if (task.for_approval) {
                   try {
                     console.log("messageBody", messageBody);
-                    const inbox = await axios.post(
-                      `${process.env.NESTJS_API_URL}/api/v1/inbox`,
-                      {
-                        clientId: client_id,
-                        title: `${task.type} for ${customer?.full_name}`,
-                        content: {
-                          description: messageBody,
-                          communicationType: task.type.toLowerCase(),
-                          customer,
-                          stage_agent_settings: stage?.data?.agent_settings,
-                          status: "pending",
-                        },
-                        category: "approval",
-                        relatedEntityId: task.id,
-                        relatedEntityType: "task",
-                      }
+                    const inbox = await sendTaskToInbox(
+                      client_id,
+                      customer,
+                      stage?.data,
+                      task as AgentTask,
+                      messageBody
                     );
                     console.log("inbox", inbox.data);
                     return NextResponse.json(inbox.data);
@@ -113,11 +113,13 @@ export async function POST(
                     console.error("Error sending to inbox:", error);
                   }
                 }
-                const toolCallMessage = `${task.type}-customer,
-                {name: ${customer?.full_name}, client_id: ${client_id}, ${
-                  task.type === "Call" ? "script:" : "message:"
-                } ${messageBody}}\n\n`;
-                await crmAgent(toolCallMessage);
+                await handleImmediateTaskExecution(
+                  client_id,
+                  customer,
+                  stage?.data,
+                  task as AgentTask,
+                  messageBody
+                );
               }
             )
           )
